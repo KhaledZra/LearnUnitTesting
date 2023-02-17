@@ -1,0 +1,25 @@
+The booking must have a start time.
+The booking should have a duration.
+Bookings may not be longer than 1 hour.
+Bookings must be at least 15 minutes.
+The booking should have a price.
+The booking should apply a custom discount for companies.
+The booking should be free for pensioners.
+The booking should have a 20% discount for teenagers.
+The booking should have a 50% discount for children under 12.
+The booking should be associated with a location.
+The user must be able to cancel a booking.
+The booking name should be the user name + the location name.
+If successful, the booking must be added to the user recent booking list.
+The user must not be able to cancel a booking if there is less than one hour remaining before the start time.
+
+The booking name for companies should be company name + company reg no + location name.
+
+
+Bonus:
+
+The user recent booking list must be limited to the most recent 2 bookings.
+Booking price for bookings made by companies should not include VAT.
+Bookings that start before the location opening time should be rejected.
+
+

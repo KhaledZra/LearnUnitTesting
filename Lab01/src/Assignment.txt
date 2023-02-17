@@ -1,0 +1,20 @@
+Playlist should be active when created. ****** KLAR
+Playlist title must not be null.   ****** KLAR
+Playlist title must not be empty.   ****** KLAR
+Can add songs to a playlist.    ****** KLAR
+New playlist has empty song list.   ****** KLAR
+Song added to playlist is same object instance (reference). ****** KLAR
+Songs by abba are not allowed in the playlist. ****** KLAR
+Playlist can be cleared, removing all songs. ****** KLAR
+Duplicate song titles are silently ignored. ****** KLAR
+Should be able to remove duplicates from playlist where artist and title are identical. ****** KLAR
+Playlist automatically adds current year to start of title. ****** KLAR
+Playlist is kept sorted by artist then title. 
+Songs with duration over 8 minutes are rejected. 
+Can retrieve a list of unique artists in the playlist. use distinct
+
+Bonus:
+
+Adding song raises song added event.
+Removing song raises song removed event.
+Playlist is kept sorted by release date, then artist, then title.

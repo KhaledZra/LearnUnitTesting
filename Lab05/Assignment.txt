@@ -1,0 +1,33 @@
+Add Autofixture to your project
+
+dotnet add <project_path> package Autofixture
+
+Create a class as sut, create a new method for each test e.g. (Test1() ,Test2())
+
+NB: You should NOT manipulate the fixture objects manually for the examples. Just use Autofixture features to solve the problems.
+
+Simple types
+
+Pass a parameter 'name' into the test method, value can be completely random
+Pass a parameter 'quantity' into the test method, value can be completely random
+Pass a parameter 'quantity' into the test method, with a value between 0 and 10. Verify in the method that the value was in the correct range (return boolean).
+Pass a parameter 'date' into the test method, with a random value.
+Pass a parameter 'date' into the test method, with a value during the year 2018.
+Pass a parameters 'name' into the test method, with a specific prefix. (dotnet add <project_path> package Autofixture.SeedExtensions)
+Pass a list of strings into the test method, each string value should be unique. Bonus: verify that the strings were unique!
+Pass a list of 12 strings into the test method. Verify that the list was the correct length.
+Create a theory test passing in a random integer. (dotnet add <project_file> package Autofixture.Xunit2)
+Create a theory test passing in random string.
+
+Complex types
+
+Create a class CreateBookingRequest and add a property 'Name' to it.
+Using Autofixture, create a booking request and pass it into a test method.
+Pass in a booking request and override the Name property to be your name. (hint: use the Build method of Autofixture)
+Add a string property Location to the booking request. Pass in a booking request and override all strings to return your name.
+Pass in a booking request with the name property left as null.
+Create a test passing in a Fake IPaymentGateway interface. *** Ask me for help if you get here ***
+
+Bonus
+
+Update your lab 4 tests to use AutoFixture.

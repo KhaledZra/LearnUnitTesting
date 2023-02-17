@@ -1,0 +1,29 @@
+Work through the tasks creating a new test for each.
+You can create a new Confirm method on your booking for each test
+e.g.
+Confirm1
+Confirm2
+
+Try to verify using the most appropriate assertion available.
+Remember to use TDD and write the test first, starting with the assertion.
+If any task is unclear or you need a hint, ask the product owner (me!).
+
+
+Confirming a booking should take a payment
+Confirming a booking should take two payments both for amount 50
+Confirming a booking should take one payment with amount 100 and any vat amount
+Confirming a booking should take firstly a payment with amount 50 and vat 3, then a payment with amount 65 and vat 4
+
+Confirming a booking should use the amount returned by the price calculator
+Confirming a booking should use the amount and vat amount returned by the price calculator
+Confirming a booking should take two payments in any order retrieved from the price calculator
+Confirming a booking should take two payments returned by the price calculator,
+        firstly for amount 50 and vat 2,
+        then amount 25 and vat 1
+
+Bonus:
+
+Switch out FakeItEasy for either Moq or NSubstitute and solve the same
+assignment.
+Compare the readability and ease with which you could
+achieve the correct assertion.

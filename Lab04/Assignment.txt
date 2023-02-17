@@ -1,0 +1,31 @@
+
+If the booking is successful, the booking should be persisted.
+
+If the booking is successful, payment should be captured from the users payment method.
+The booking price should be calculated by a external service, based upon the booking party, location and date requested.
+If the payment is unsuccessful, then the booking should not be persisted.
+If the booking is cancelled up to 60 days before the booking date, the money should be refunded.
+If the booking is cancelled up to 30 days before the booking, 75 percent of the booking price should be refunded.
+If the booking is cancelled up to 7 days before the booking, 50 percent of the booking price should be refunded.
+When the booking user supplies an email, a booking confirmation should be sent to the user.
+When the booking user supplies an email and a payment fails, a failed payment email should be sent to the user.
+When the booking user supplies an email and a cancellation is successful, a cancellation email should be sent to the user.
+When the booking user supplies an email and a cancellation fails, an explanation email should be sent to the user.
+
+Changing the booking date up to 20 days before the booking charges an additional 20% of the original booking price.
+Changing the booking date up to 10 days before the booking charges an additional 30% of the original booking price.
+Changing the booking date up to 2 days before the booking charges an additional 40% of the original booking price.
+
+Bonus
+
+Bookings can be retrieved using a date filter.
+Cancelled bookings can be retrieved for a specific user.
+Successful booking should log to a domain logger.
+Failed booking should log to a domain logger.
+Changing the booking date should log to a domain logger.
+Cancelling the booking should log to a domain logger.
+Successul bookings should be placed on a message bus for distribution to integration partners (e.g hotel).
+Cancelled bookings should be placed on a message bus for distribution to our integration partners (e.g. hotel).
+
+// var settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
+// var client = new MongoClient(settings);
