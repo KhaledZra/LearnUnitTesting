@@ -25,12 +25,23 @@ namespace Lab01.Domain
 
     public bool TryAddNewSong(Song song)
     {
-      if (!song.Artist.Contains("abba", StringComparison.CurrentCultureIgnoreCase))
+      if (!song.Artist.Contains("abba", StringComparison.CurrentCultureIgnoreCase)) // banned artist check
       {
-        if (Songs.FirstOrDefault(s => s.Artist == song.Artist) == null)
+        if (Songs.FirstOrDefault(s => s.Artist == song.Artist && s.Name == song.Name) == null) // dupe check
         {
-          Songs.Add(song);
-          return true;
+          if (song.DurationInMinutes < 8.0f) // duration check
+          {
+            Songs.Add(song);
+            if (Songs.Count >= 2)
+            {
+              Songs = Songs
+                .OrderBy(s => s.ReleaseDate)
+                .ThenBy(s => s.Artist)
+                .ThenBy(s => s.Name)
+                .ToList();
+            }
+            return true;
+          }
         }
       }
       
@@ -43,6 +54,21 @@ namespace Lab01.Domain
       {
         Songs.Remove(Songs.FirstOrDefault(s => s.Artist == s.Name));
       }
+    }
+    
+    public List<string> RetrieveUniqueArtistList()
+    {
+      List<string> uniqueArtistList = new List<string>();
+      
+      Songs.ForEach(song =>
+      {
+        if (!uniqueArtistList.Contains(song.Artist))
+        {
+          uniqueArtistList.Add(song.Artist);
+        }
+      });
+
+      return uniqueArtistList;
     }
   }
 }

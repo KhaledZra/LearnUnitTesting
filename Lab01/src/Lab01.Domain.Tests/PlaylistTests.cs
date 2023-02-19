@@ -152,5 +152,53 @@ namespace Lab01.Domain.Tests
             // Assert
             Assert.True(sut.Title.Contains(DateTime.Now.Year.ToString()));
         }
+        
+        [Fact]
+        public void Playlist_is_sorted_by_artist_then_title()
+        {
+            // Arrange
+            var sut = new Playlist();
+            var song1 = new Song() {Artist = "Carl", Name = "Banjo times", DurationInMinutes = 5.0f, ReleaseDate = DateTime.Now.AddDays(2)};
+            var song2 = new Song() {Artist = "Carl", Name = "Adamanite", DurationInMinutes = 5.0f, ReleaseDate = DateTime.Now.AddDays(2)};
+            var song3 = new Song() {Artist = "Adam", Name = "Hej", DurationInMinutes = 5.0f, ReleaseDate = DateTime.Now.AddDays(1)};
+
+            // Act
+            sut.TryAddNewSong(song3);
+            sut.TryAddNewSong(song2);
+            sut.TryAddNewSong(song1);
+
+            // Assert
+            Assert.True(sut.Songs[0] == song3);
+        }
+        
+        [Fact]
+        public void Songs_over_eight_minutes_are_rejected()
+        {
+            // Arrange
+            var sut = new Playlist();
+
+            // Act
+            var song = new Song() {Artist = "Khaled", Name = "Hej", DurationInMinutes = 9.0f};
+
+            // Assert
+            Assert.False(sut.TryAddNewSong(song));
+        }
+        
+        [Fact]
+        public void Playlist_can_retrieve_list_of_unique_artists()
+        {
+            // Arrange
+            var sut = new Playlist();
+            var song1 = new Song() {Artist = "Khaled", Name = "Hej", DurationInMinutes = 5.0f};
+            var song2 = new Song() {Artist = "Khaled", Name = "Då", DurationInMinutes = 6.0f};
+            sut.TryAddNewSong(song1);
+            sut.TryAddNewSong(song2);
+
+            // Act
+            var uniqueList = sut.RetrieveUniqueArtistList();
+
+            // Assert
+            Assert.True(uniqueList.Count == 1);
+        }
     }
 }
