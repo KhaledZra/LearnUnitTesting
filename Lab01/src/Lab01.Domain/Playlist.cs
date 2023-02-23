@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Lab01.Domain
 {
+  public record PlayList(string FirstName, string LastName);
+  
   public class Playlist
   {
     public string Title { get; private set;  }
@@ -11,7 +14,19 @@ namespace Lab01.Domain
     
     public List<Song> Songs { get; private set; }
 
+    public IReadOnlyCollection<Song> SongsList()
+    {
+      return Songs.AsReadOnly();
+    }
+
     public Playlist()
+    {
+      Title = "Unassigned";
+      IsActive = true;
+      Songs = new List<Song>();
+    }
+
+    public void CleanUp()
     {
       Title = "Unassigned";
       IsActive = true;

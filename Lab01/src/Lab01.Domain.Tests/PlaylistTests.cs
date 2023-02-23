@@ -2,20 +2,31 @@
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using Xunit;
+using FluentAssertions;
 namespace Lab01.Domain.Tests
 {
-    public class PlaylistTests
+    public class PlaylistTests : IDisposable
     {
+        private readonly Playlist _sut;
+
+        public PlaylistTests()
+        {
+            _sut = new Playlist();
+        }
+        
         [Fact]
         public void Active_when_created()
         {
             // Arrange 
-            var sut = new Playlist();
+            Playlist sut = new Playlist();
 
             // Act
             
             // Assert
-            Assert.True(sut.IsActive);
+            sut.IsActive.Should().BeTrue();
+            
+            // Teardown
+            Dispose();
         }
         
         [Fact]
@@ -27,7 +38,7 @@ namespace Lab01.Domain.Tests
             // Act
             
             // Assert
-            Assert.True(sut.Title != null);
+            sut.Title.Should().NotBeNull();
         }
         
         [Fact]
@@ -39,7 +50,7 @@ namespace Lab01.Domain.Tests
             // Act
             
             // Assert
-            Assert.False(string.IsNullOrEmpty(sut.Title));
+            sut.Title.Should().NotBeNullOrEmpty();
         }
         
         [Fact]
@@ -54,7 +65,7 @@ namespace Lab01.Domain.Tests
             sut.Songs.Add(song);
 
             // Assert
-            Assert.True(sut.Songs.Contains(song));
+            sut.Songs.Should().Contain(song);
         }
         
         [Fact]
@@ -63,7 +74,7 @@ namespace Lab01.Domain.Tests
             var sut = new Playlist();
 
             // only one assert
-            Assert.Empty(sut.Songs);
+            sut.Songs.Should().BeEmpty();
         }
         
         [Fact]
@@ -78,7 +89,7 @@ namespace Lab01.Domain.Tests
             sut.Songs.Add(song);
 
             // Assert
-            Assert.True(song.Equals(sut.Songs[0]));
+            sut.Songs.Should().BeEquivalentTo(song);
         }
         
         [Fact]
@@ -92,7 +103,7 @@ namespace Lab01.Domain.Tests
             song.Artist = "Abba";
 
             // Assert
-            Assert.False(sut.TryAddNewSong(song));
+            sut.TryAddNewSong(song).Should().BeFalse();
         }
         
         [Fact]
@@ -106,7 +117,7 @@ namespace Lab01.Domain.Tests
             sut.Songs.Clear();
 
             // Assert
-            Assert.Empty(sut.Songs);
+            sut.Songs.Should().BeEmpty();
         }
         
         [Fact]
@@ -122,7 +133,7 @@ namespace Lab01.Domain.Tests
             sut.TryAddNewSong(song);
 
             // Assert
-            Assert.True(sut.Songs.Count == 1);
+            sut.Songs.Should().HaveCount(1);
         }
         
         [Fact]
@@ -137,7 +148,7 @@ namespace Lab01.Domain.Tests
             sut.RemoveFaultySongs();
 
             // Assert
-            Assert.True(sut.Songs.Count == 0);
+            sut.Songs.Should().HaveCount(0);
         }
         
         [Fact]
@@ -150,7 +161,7 @@ namespace Lab01.Domain.Tests
             sut.SetTitle("Khaled");
             
             // Assert
-            Assert.True(sut.Title.Contains(DateTime.Now.Year.ToString()));
+            sut.Title.Should().Contain(DateTime.Now.Year.ToString());
         }
         
         [Fact]
@@ -168,7 +179,7 @@ namespace Lab01.Domain.Tests
             sut.TryAddNewSong(song1);
 
             // Assert
-            Assert.True(sut.Songs[0] == song3);
+            sut.Songs[0].Should().BeEquivalentTo(song3);
         }
         
         [Fact]
@@ -181,7 +192,7 @@ namespace Lab01.Domain.Tests
             var song = new Song() {Artist = "Khaled", Name = "Hej", DurationInMinutes = 9.0f};
 
             // Assert
-            Assert.False(sut.TryAddNewSong(song));
+            sut.TryAddNewSong(song).Should().BeFalse();
         }
         
         [Fact]
@@ -198,7 +209,12 @@ namespace Lab01.Domain.Tests
             var uniqueList = sut.RetrieveUniqueArtistList();
 
             // Assert
-            Assert.True(uniqueList.Count == 1);
+            uniqueList.Should().HaveCount(1);
+        }
+
+        public void Dispose()
+        {
+            _sut.CleanUp();
         }
     }
 }
