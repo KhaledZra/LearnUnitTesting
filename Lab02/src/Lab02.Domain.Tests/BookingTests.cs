@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 using FluentAssertions;
 using NodaTime;
@@ -93,10 +94,10 @@ namespace Lab02.Domain.Tests
             Booking sut = new Booking("Khaled", "boras", BookingDiscount.Pensioners);
             
             // Act 
-            sut.GeneratePrice(); // Start price is 50
+            sut.GeneratePrice(); // Start price is 50 + 20 tax
             
             // Assert
-            sut.Price.Should().Be(0);
+            sut.Price.Should().Be(20);
         }
         
         [Fact]
@@ -106,10 +107,10 @@ namespace Lab02.Domain.Tests
             Booking sut = new Booking("Khaled", "boras", BookingDiscount.Teenagers);
             
             // Act 
-            sut.GeneratePrice(); // Start price is 50
+            sut.GeneratePrice(); // Start price is 50 + 20 tax
             
             // Assert
-            sut.Price.Should().Be(40);
+            sut.Price.Should().Be(60);
         }
         
         [Fact]
@@ -119,10 +120,10 @@ namespace Lab02.Domain.Tests
             Booking sut = new Booking("Khaled", "boras", BookingDiscount.Children);
             
             // Act 
-            sut.GeneratePrice(); // Start price is 50
+            sut.GeneratePrice(); // Start price is 50 + 20 tax
             
             // Assert
-            sut.Price.Should().Be(25);
+            sut.Price.Should().Be(45);
         }
         
         [Fact]
@@ -143,7 +144,7 @@ namespace Lab02.Domain.Tests
         {
             // Arrange
             User sut = new User("Khaled",new List<Booking>());
-            sut.AddBooking(new Booking(sut.Name, "boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "boras"), 1);
 
             // Act
             sut.CancelBooking(0);
@@ -160,10 +161,10 @@ namespace Lab02.Domain.Tests
             
         
             // Act
-            sut.AddBooking(new Booking(sut.Name, "boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "boras"));
 
             // Assert
-            sut.Name.Should().Be(sut.Name+"");
+            sut.GetName().Should().Be(sut.GetName()+"");
         }
         
         [Fact]
@@ -173,25 +174,55 @@ namespace Lab02.Domain.Tests
             User sut = new User("Khaled",new List<Booking>());
         
             // Act
-            sut.AddBooking(new Booking(sut.Name, "Boras"));
-            sut.AddBooking(new Booking(sut.Name, "Boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
         
             // Assert
             sut.GetBookingListCount().Should().Be(2);
         }
         
-        // [Fact]
-        // public void ()
-        // {
-        //     // Arrange
-        //     User sut = new User("Khaled",new List<Booking>());
-        //
-        //     // Act
-        //     sut.AddBooking(new Booking(sut.Name, "Boras"));
-        //     sut.AddBooking(new Booking(sut.Name, "Boras"));
-        //
-        //     // Assert
-        //     sut.GetBookingListCount().Should().Be(2);
-        // }
+        [Fact]
+        public void User_should_not_be_able_to_cancel_one_hour_before_start()
+        {
+            // Arrange
+            User sut = new User("Khaled",new List<Booking>());
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
+            // Act
+            var result = sut.CancelBooking(0);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+        
+        [Fact]
+        public void Company_booking_name_should_be_name_and_reg_no_and_location()
+        {
+            // Arrange
+            Company sut = new Company("KhaledCo", "101",new List<Booking>());
+        
+            // Act
+            var result = new Booking(sut.GetName(), "Boras");
+
+            // Assert
+            result.Name.Should().BeEquivalentTo("KhaledCo101Boras");
+        }
+        
+        [Fact]
+        public void User_limit_recent_booking_to_two()
+        {
+            // Arrange
+            User sut = new User("Khaled",new List<Booking>());
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
+            sut.AddBooking(new Booking(sut.GetName(), "Boras"));
+        
+            // Act
+            var recentLog = sut.GetBookingLog();
+
+            // Assert
+            recentLog.Count.Should().Be(2);
+        }
     }
 }

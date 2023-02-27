@@ -4,29 +4,28 @@ using NodaTime;
 
 namespace Lab02.Domain;
 
-public class User : IBooker
+public class Company : IBooker
 {
     private readonly string _name;
+    private readonly string _companyRegNo;
     private readonly List<Booking> _bookings;
-    private readonly List<Booking> _bookingsLog;
 
-    public User(string name, List<Booking> booking)
+    public Company(string name, string companyRegNo, List<Booking> booking)
     {
         this._name = name;
+        this._companyRegNo = companyRegNo;
         this._bookings = booking;
-        _bookingsLog = new List<Booking>();
     }
 
     public string GetName()
     {
-        return _name;
+        return _name + _companyRegNo;
     }
 
     public void AddBooking(Booking booking, int delayByDays = 0)
     {
         booking.SetStartTime(delayByDays);
         _bookings.Add(booking);
-        LogBooking(booking);
     }
 
     public bool CancelBooking(int index)
@@ -51,18 +50,14 @@ public class User : IBooker
     {
         return _bookings.Count;
     }
-
+    
     public void LogBooking(Booking booking)
     {
-        _bookingsLog.Add(booking);
-        if (_bookings.Count == 3) // limit to recent to 2 bookings
-        {
-            _bookings.RemoveAt(0);
-        }
+        throw new NotImplementedException();
     }
 
     public IReadOnlyCollection<Booking> GetBookingLog()
     {
-        return _bookings.AsReadOnly();
+        throw new NotImplementedException();
     }
 }

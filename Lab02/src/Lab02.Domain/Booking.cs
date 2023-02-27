@@ -23,6 +23,9 @@ public class Booking
     public bool IsActive { get; set; }
     
     private readonly BookingDiscount _bookingDiscount;
+    private readonly float basePrice = 50.0f;
+    private readonly float vatBasePrice = 20.0f;
+    
 
     public Booking(string userName, string location, BookingDiscount bookingDiscount = BookingDiscount.None)
     {
@@ -60,8 +63,12 @@ public class Booking
 
     public void GeneratePrice(float customDiscountModifier = 0)
     {
-        Price = 50.0f;
+        Price = basePrice;
         ApplyDiscount(customDiscountModifier);
+        if (_bookingDiscount != BookingDiscount.Companies)
+        {
+            Price += vatBasePrice;
+        }
     }
 
     // Private methods
