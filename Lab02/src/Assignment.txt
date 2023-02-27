@@ -17,7 +17,7 @@ The booking name for companies should be company name + company reg no + locatio
 
 Bonus:
 
-The user recent booking list must be limited to the most recent 2 bookings.
+The user recent booking list must be limited to the most recent 2 bookings. KLAR
 Booking price for bookings made by companies should not include VAT. KLAR
 Bookings that start before the location opening time should be rejected.
 
