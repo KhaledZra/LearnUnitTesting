@@ -6,6 +6,8 @@ namespace Lab02.Domain;
 
 public class User : IBooker
 {
+    
+    
     private readonly string _name;
     private readonly List<Booking> _bookings;
     private readonly List<Booking> _bookingsLog;
@@ -15,6 +17,8 @@ public class User : IBooker
         this._name = name;
         this._bookings = booking;
         _bookingsLog = new List<Booking>();
+        
+        
     }
 
     public string GetName()

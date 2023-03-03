@@ -2,7 +2,7 @@
 
 namespace Lab03.Domain.Tests
 {
-    using FakeItEasy; // Parameterized Input
+    using FakeItEasy; // Named paramteters
     using Xunit; // any test framework will do
 
     public class SweetToothTests
@@ -12,10 +12,11 @@ namespace Lab03.Domain.Tests
         {
             // make some fakes for the test
             var lollipop = A.Fake<ICandy>();
-            var shop = A.Fake<ICandyShop>();
+            var shop = A.Fake<ICandyShop>(); 
+            //A.<datatype>.Ignored // use this to handle method input
 
-            // set up a call to return a value
-            A.CallTo(() => shop.GetTopSellingCandy()).Returns(lollipop);
+            // set up a call to return a value // stubs should be part of arrange
+            A.CallTo(() => shop.GetTopSellingCandy()).Returns(lollipop); // Stub because returns
             A.CallTo(() => shop.Address).Returns("123 Fake Street");
 
             // use the fake as an actual instance of the faked type
@@ -24,7 +25,7 @@ namespace Lab03.Domain.Tests
 
             // asserting uses the exact same syntax as when configuring calls—
             // no need to learn another syntax
-            A.CallTo(() => shop.BuyCandy(lollipop)).MustHaveHappened();
+            A.CallTo(() => shop.BuyCandy(lollipop)).MustHaveHappened(); // mock because does something
             shop.Address.Should().Be("123 Fake Street");
         }
 
