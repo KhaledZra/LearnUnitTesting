@@ -4,7 +4,7 @@ namespace Lab03.Domain
 {
     public interface IPaymentSystem
     {
-        public void Pay();
+        public void Pay(int amount);
 
         public int Balance();
 
@@ -12,7 +12,7 @@ namespace Lab03.Domain
     }
     public abstract class PaymentSystem : IPaymentSystem
     {
-        public abstract void Pay();
+        public abstract void Pay(int amount);
         public abstract int Balance();
         public abstract int Vat();
     }
