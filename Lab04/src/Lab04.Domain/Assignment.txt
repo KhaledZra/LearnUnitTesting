@@ -1,5 +1,5 @@
 
-If the booking is successful, the booking should be persisted.
+If the booking is successful, the booking should be persisted. // Basically the booking should be saved to db/file
 
 If the booking is successful, payment should be captured from the users payment method.
 The booking price should be calculated by a external service, based upon the booking party, location and date requested.
