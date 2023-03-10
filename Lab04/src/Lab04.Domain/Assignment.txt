@@ -1,8 +1,8 @@
 
-If the booking is successful, the booking should be persisted. // Basically the booking should be saved to db/file
+If the booking is successful, the booking should be persisted. // Basically the booking should be saved to db/file KLAR
 
-If the booking is successful, payment should be captured from the users payment method.
-The booking price should be calculated by a external service, based upon the booking party, location and date requested.
+If the booking is successful, payment should be captured from the users payment method. KLAR
+The booking price should be calculated by a external service, based upon the booking party, location and date requested. KLAR
 If the payment is unsuccessful, then the booking should not be persisted.
 If the booking is cancelled up to 60 days before the booking date, the money should be refunded.
 If the booking is cancelled up to 30 days before the booking, 75 percent of the booking price should be refunded.

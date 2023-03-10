@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Lab04.Domain.Interface;
 using Lab04.Domain.Model;
 using MongoDB.Driver;
@@ -7,30 +8,45 @@ namespace Lab04.Domain;
 
 public class MongoDbHandler
 {
-    private List<Booking> _fakeDbList = new List<Booking>();
+    // Not used
+    private List<BookingDocument> _fakeDbList = new List<BookingDocument>();
+    
+    //private readonly MongoClientSettings _settings;
+    //private readonly IMongoClient _client;
+    private readonly IMongoCollection<BookingDocument> _collection;
 
-    private MongoClientSettings _settings;
-    private MongoClient _client;
-    private IMongoDatabase _test;
-
-    public MongoDbHandler()
+    // IMongoClient is injected instead
+    public MongoDbHandler(IMongoClient mongoClient)
     {
-        this._settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
-        this._client = new MongoClient(_settings);
-        IMongoDatabase test = _client.GetDatabase("");
+        // Better to do this elsewhere when injecting mongoClient with preset settings
+        //this._settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
+        //this._client = mongoClient;
+        
+        this._collection = mongoClient
+            .GetDatabase("Lab4")
+            .GetCollection<BookingDocument>("BookingCollection");
     }
 
-    public bool SaveToDatabase(Booking booking)
+    public void SaveToDatabase(BookingDocument booking)
     {
-        throw new System.NotImplementedException();
+        try
+        {
+            _collection.InsertOne(booking);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
-    public Booking GetFromDatabase(int id)
+    public BookingDocument GetFromDatabase(int id)
     {
-        throw new System.NotImplementedException();
+        return _collection.Find<BookingDocument>(bd => bd.Id == id).FirstOrDefault() ??
+               throw new Exception("Not found");
     }
 
-    public bool UpdateToDatabase(Booking booking)
+    public bool UpdateToDatabase(BookingDocument booking)
     {
         throw new System.NotImplementedException();
     }
