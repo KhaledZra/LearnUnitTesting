@@ -42,8 +42,7 @@ public class MongoDbHandler
 
     public BookingDocument GetFromDatabase(int id)
     {
-        return _collection.Find<BookingDocument>(bd => bd.Id == id).FirstOrDefault() ??
-               throw new Exception("Not found");
+        return _collection.Find<BookingDocument>(bd => bd.Id == id).FirstOrDefault();
     }
 
     public bool UpdateToDatabase(BookingDocument booking)

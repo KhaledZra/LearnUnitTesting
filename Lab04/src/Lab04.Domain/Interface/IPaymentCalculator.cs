@@ -1,6 +1,9 @@
-﻿namespace Lab04.Domain.Interface;
+﻿using System;
+using Lab04.Domain.Model;
+
+namespace Lab04.Domain.Interface;
 
 public interface IPaymentCalculator
 {
-    public float GetPrice();
+    public float GetPrice(BookingDocument bookingDocument, string location, DateOnly dateTime);
 }

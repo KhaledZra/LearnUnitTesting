@@ -1,4 +1,5 @@
-﻿using Lab04.Domain.Interface;
+﻿using System;
+using Lab04.Domain.Interface;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Lab04.Domain.Model;
@@ -18,6 +19,14 @@ public class User : IUser
     
     public void StartPaymentProcess(float payment)
     {
-        _paymentGateway.SendPayment(payment);
+        try
+        {
+            _paymentGateway.SendPayment(payment);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }
