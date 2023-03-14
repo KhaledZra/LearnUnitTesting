@@ -5,5 +5,5 @@ namespace Lab04.Domain.Interface;
 
 public interface IPaymentCalculator
 {
-    public float GetPrice(BookingDocument bookingDocument, string location, DateOnly dateTime);
+    public float GetPrice(BookingDocument bookingDocument);
 }

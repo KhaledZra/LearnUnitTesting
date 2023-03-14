@@ -2,6 +2,5 @@
 
 public interface IUser
 {
-    public string Name { get; set; }
     public void StartPaymentProcess(float payment);
 }

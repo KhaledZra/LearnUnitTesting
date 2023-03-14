@@ -15,6 +15,7 @@ public class BookingDocument
     public float Price { get; private set; }
     public string Location { get; private set; }
     public DateOnly DateRequested { get; private set; }
+    public bool IsActive { get; private set; }
 
     public BookingDocument(int id, User user, IPaymentCalculator paymentCalculator, string location,
         DateOnly dateRequested)
@@ -23,7 +24,12 @@ public class BookingDocument
         User = user;
         Location = location;
         DateRequested = dateRequested;
-        
-        Price = paymentCalculator.GetPrice(this, Location, DateRequested);
+        Price = paymentCalculator.GetPrice(this);
+        IsActive = true;
+    }
+
+    public void DisableBooking()
+    {
+        IsActive = false;
     }
 }

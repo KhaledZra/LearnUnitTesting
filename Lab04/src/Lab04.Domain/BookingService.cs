@@ -13,24 +13,31 @@ namespace Lab04.Domain
         private readonly MongoDbHandler _dataManager;
         private readonly IPaymentCalculator _paymentCalculator;
         private readonly IPaymentGateway _paymentGateway;
-        
+        private readonly IEmailSystem _emailSystem;
+
         public BookingService(MongoDbHandler dataManager, IPaymentCalculator paymentCalculator,
-            IPaymentGateway paymentGateway = null)
+            IPaymentGateway paymentGateway, IEmailSystem emailSystem)
         {
             _dataManager = dataManager;
             _paymentCalculator = paymentCalculator;
             _paymentGateway = paymentGateway;
+            _emailSystem = emailSystem;
         }
 
         public BookingDocument CreateNewBooking(int userId, string userName, 
-            int bookingId, string bookingLocation, DateOnly bookingStartDate)
+            int bookingId, string bookingLocation, DateOnly bookingStartDate, string userEmail = "")
         {
-            return new BookingDocument(
+            var newBooking = new BookingDocument(
                 paymentCalculator: _paymentCalculator,
-                user: new User(userId, userName, _paymentGateway),
+                user: new User(userId, userName, _paymentGateway, userEmail),
                 id: bookingId,
                 location: bookingLocation,
                 dateRequested: bookingStartDate);
+            
+            // If user gives email send email with successful booking information
+            if (!string.IsNullOrWhiteSpace(userEmail)) _emailSystem.SendSuccessfulEmail(newBooking);
+
+            return newBooking;
         }
 
         public void AddBookingToDb(BookingDocument bookingDocument)
@@ -50,16 +57,41 @@ namespace Lab04.Domain
             _dataManager.SaveToDatabase(bookingDocument);
         }
 
-        public BookingDocument GetBookingFromDb(int id)
+        public BookingDocument GetBookingFromDb(int bookingId)
         {
-            return _dataManager.GetFromDatabase(id);
+            return _dataManager.GetFromDatabase(bookingId);
             //  ?? throw new Exception("Not found")
         }
 
-        public void StartBookingCancelProcess(int id)
+        public void StartBookingCancelProcess(int bookingId)
         {
-            Guard.Against.Null(_dataManager.GetFromDatabase(id), nameof(id));
+            var bookingDocument = _dataManager.GetFromDatabase(bookingId);
+            DateOnly dateNow = DateOnly.FromDateTime(DateTime.Today);
+            Guard.Against.Null(bookingDocument, nameof(bookingDocument));
 
+            if (dateNow.AddDays(60) < bookingDocument.DateRequested) // more than 60 days
+            {
+                _paymentGateway.RequestPaymentRefund(1, bookingDocument.Price);
+            }
+            else if (dateNow.AddDays(30) < bookingDocument.DateRequested) // more than 30 days
+            {
+                _paymentGateway.RequestPaymentRefund(1, bookingDocument.Price * 0.75f);
+            }
+            else if (dateNow.AddDays(7) < bookingDocument.DateRequested) // more than 7 days
+            {
+                _paymentGateway.RequestPaymentRefund(1, bookingDocument.Price * 0.50f);
+            }
+            else if (dateNow >= bookingDocument.DateRequested) // user trying to cancel after booking start date
+            {
+                throw new Exception($"Trying to cancel booking past start date, Today: {dateNow}," +
+                                    $" booking start date: {bookingDocument.DateRequested}");
+            }
+            else
+            {
+                throw new NotImplementedException("Something went wrong, unhandled condition.");
+            }
+
+            bookingDocument.DisableBooking();
         }
     }
 }

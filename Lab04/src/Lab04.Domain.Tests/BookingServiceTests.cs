@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using Autofac.Core;
 using Autofac.Extras.FakeItEasy;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
@@ -35,13 +36,13 @@ namespace Lab04.Domain.Tests
         public BookingServiceTests()
         {
             _fake = new AutoFake();
-            _fake.Provide<IMongoClient>(this.mongoClient);
-            _fake.Provide<BookingDocument>(_fake.Resolve<BookingService>().CreateNewBooking(
-                userId:1,
-                userName: "khaled",
-                bookingId: 1,
-                bookingLocation: "skene",
-                bookingStartDate: DateOnly.FromDateTime(DateTime.Today)));
+            _fake.Provide<MongoDbHandler>(new MongoDbHandler(this.mongoClient));
+            // _fake.Provide<BookingDocument>(_fake.Resolve<BookingService>().CreateNewBooking(
+            //     userId:1,
+            //     userName: "khaled",
+            //     bookingId: 1,
+            //     bookingLocation: "skene",
+            //     bookingStartDate: DateOnly.FromDateTime(DateTime.Today)));
         }
         
         [Fact]
@@ -49,7 +50,12 @@ namespace Lab04.Domain.Tests
         {
             // Arrange
             BookingService sut = _fake.Resolve<BookingService>();
-            BookingDocument bookingDocument = _fake.Resolve<BookingDocument>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId:1,
+                userName: "khaled",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today));
 
                 // Act
             sut.AddBookingToDb(bookingDocument);
@@ -86,95 +92,122 @@ namespace Lab04.Domain.Tests
         // }
         
         
-        // TODO IN ALL TESTS BELOW, apply changes from autofac and new BookingService constructor
         [Fact]
         public void Booking_payment_from_user_needs_to_be_captured() 
         {
             // Arrange
-            IPaymentGateway fakePaymentGateway = A.Fake<IPaymentGateway>();
-            IPaymentCalculator fakePaymentCalculator = A.Fake<IPaymentCalculator>();
-            A.CallTo(() => fakePaymentCalculator
-                    .GetPrice(A<BookingDocument>.Ignored, A<string>.Ignored, A<DateOnly>.Ignored))
-                    .Returns(50);
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId:1,
+                userName: "khaled",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today));
             
-            User user = new User(1, "Khaled", fakePaymentGateway);
-            BookingService sut = new BookingService(
-                new MongoDbHandler(this.mongoClient), fakePaymentCalculator);
+            A.CallTo(() => _fake.Resolve<IPaymentCalculator>()
+                    .GetPrice(A<BookingDocument>.Ignored)).Returns(50);
             
             // Act
-            sut.AddBookingToDb(new BookingDocument(1, user, fakePaymentCalculator, "skene",
-                DateOnly.FromDateTime(DateTime.Today)));
+            bookingDocument.User.StartPaymentProcess(50);
 
             // Assert
-            A.CallTo(() => fakePaymentGateway.SendPayment(50)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fake.Resolve<IPaymentGateway>().SendPayment(50)).MustHaveHappenedOnceExactly();
         }
         
         [Fact]
         public void Booking_payment_should_use_external_service_to_calculate_price()
         {
             // Arrange
-            IPaymentGateway fakePaymentGateway = A.Fake<IPaymentGateway>();
-            IPaymentCalculator fakePaymentCalculator = A.Fake<IPaymentCalculator>();
-            A.CallTo(() => fakePaymentCalculator
-                .GetPrice(A<BookingDocument>.Ignored, A<string>.Ignored, A<DateOnly>.Ignored))
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId:1,
+                userName: "khaled",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today));
+            
+            A.CallTo(() => _fake.Resolve<IPaymentCalculator>()
+                    .GetPrice(A<BookingDocument>.Ignored))
                 .Returns(50);
             
-            User user = new User(1, "Khaled", fakePaymentGateway);
-            BookingService sut = new BookingService(
-                new MongoDbHandler(this.mongoClient), fakePaymentCalculator);
-            
             // Act
-            sut.AddBookingToDb(new BookingDocument(1, user, fakePaymentCalculator,
-                "skene", DateOnly.FromDateTime(DateTime.Today)));
+            sut.AddBookingToDb(bookingDocument);
 
             // Assert
-            A.CallTo(() => fakePaymentGateway.SendPayment(50)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fake.Resolve<IPaymentGateway>().SendPayment(A<float>.Ignored)).MustHaveHappenedOnceExactly();
         }
         
         [Fact]
         public void Booking_should_not_be_persisted_if_payment_fails()
         {
             // Arrange
-            IPaymentGateway fakePaymentGateway = A.Fake<IPaymentGateway>();
-            IPaymentCalculator fakePaymentCalculator = A.Fake<IPaymentCalculator>();
-            A.CallTo(() => fakePaymentGateway
+            A.CallTo(() => _fake.Resolve<IPaymentGateway>()
                 .SendPayment(A<float>.Ignored))
                 .Throws(new Exception("Something went wrong"));
 
-            User user = new User(1, "Khaled", fakePaymentGateway);
-            BookingService sut = new BookingService(
-                new MongoDbHandler(this.mongoClient), fakePaymentCalculator);
+            BookingService sut = _fake.Resolve<BookingService>();
             
             // Act
-            Action action = () => sut.AddBookingToDb(new BookingDocument(1, user, fakePaymentCalculator,
-                "skene", DateOnly.FromDateTime(DateTime.Today)));
-
+            Action action = () => sut.AddBookingToDb(sut.CreateNewBooking(
+                userId:1,
+                userName: "khaled",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today)));
+        
             // Assert
             action.Should().Throw<Exception>("Something went wrong");
             sut.GetBookingFromDb(1).Should().BeNull();
         }
         
-        [Fact]
-        public void Booking_should_not_be_persisted_if_payment_fails0()
+        [Theory]
+        [InlineData(61, 75.0f, 75.0f)]
+        [InlineData(31, 75.0f, 56.25f)]
+        [InlineData(8, 75.0f, 37.5f)]
+        public void Booking_should_refund_based_on_days_left_before_start_date(int daysLeft, float pricePaid,
+            float expectedRefundValue)
         {
             // Arrange
-            IPaymentGateway fakePaymentGateway = A.Fake<IPaymentGateway>();
-            IPaymentCalculator fakePaymentCalculator = A.Fake<IPaymentCalculator>();
-            A.CallTo(() => fakePaymentGateway
-                    .SendPayment(A<float>.Ignored))
-                .Throws(new Exception("Something went wrong"));
+            A.CallTo(() => _fake.Resolve<IPaymentCalculator>()
+                .GetPrice(A<BookingDocument>.Ignored))
+                .Returns(pricePaid);
 
-            User user = new User(1, "Khaled", fakePaymentGateway);
-            BookingService sut = new BookingService(
-                new MongoDbHandler(this.mongoClient), fakePaymentCalculator);
+            BookingService sut = _fake.Resolve<BookingService>();
+            
+            sut.AddBookingToDb(sut.CreateNewBooking(
+                userId:1,
+                userName: "khaled",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(daysLeft)));
             
             // Act
-            Action action = () => sut.AddBookingToDb(new BookingDocument(1, user, fakePaymentCalculator,
-                "skene", DateOnly.FromDateTime(DateTime.Today)));
+            sut.StartBookingCancelProcess(bookingId:1);
 
             // Assert
-            action.Should().Throw<Exception>("Something went wrong");
-            sut.GetBookingFromDb(1).Should().BeNull();
+            A.CallTo(() => _fake.Resolve<IPaymentGateway>()
+                .RequestPaymentRefund(1, expectedRefundValue)).MustHaveHappenedOnceExactly();
+        }
+        
+        [Fact]
+        public void Booking_should_send_email_if_given_by_user()
+        {
+            // Arrange
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId: 1,
+                userName: "khaled",
+                userEmail: "khaled@gmail.com",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(100));
+            
+            // Act
+            sut.AddBookingToDb(bookingDocument);
+        
+            // Assert
+            A.CallTo(() => _fake.Resolve<IEmailSystem>()
+                .SendSuccessfulEmail(bookingDocument)).MustHaveHappenedOnceExactly();
         }
     }
 }

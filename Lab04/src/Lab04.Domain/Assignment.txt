@@ -4,10 +4,10 @@ If the booking is successful, the booking should be persisted. // Basically the 
 If the booking is successful, payment should be captured from the users payment method. KLAR
 The booking price should be calculated by a external service, based upon the booking party, location and date requested. KLAR
 If the payment is unsuccessful, then the booking should not be persisted. KLAR
-If the booking is cancelled up to 60 days before the booking date, the money should be refunded.
-If the booking is cancelled up to 30 days before the booking, 75 percent of the booking price should be refunded.
-If the booking is cancelled up to 7 days before the booking, 50 percent of the booking price should be refunded.
-When the booking user supplies an email, a booking confirmation should be sent to the user.
+If the booking is cancelled up to 60 days before the booking date, the money should be refunded.  KLAR
+If the booking is cancelled up to 30 days before the booking, 75 percent of the booking price should be refunded.  KLAR
+If the booking is cancelled up to 7 days before the booking, 50 percent of the booking price should be refunded.  KLAR
+When the booking user supplies an email, a booking confirmation should be sent to the user. KLAR
 When the booking user supplies an email and a payment fails, a failed payment email should be sent to the user.
 When the booking user supplies an email and a cancellation is successful, a cancellation email should be sent to the user.
 When the booking user supplies an email and a cancellation fails, an explanation email should be sent to the user.
