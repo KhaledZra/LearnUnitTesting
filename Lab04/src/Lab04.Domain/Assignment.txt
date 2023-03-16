@@ -8,11 +8,11 @@ If the booking is cancelled up to 60 days before the booking date, the money sho
 If the booking is cancelled up to 30 days before the booking, 75 percent of the booking price should be refunded.  KLAR
 If the booking is cancelled up to 7 days before the booking, 50 percent of the booking price should be refunded.  KLAR
 When the booking user supplies an email, a booking confirmation should be sent to the user. KLAR
-When the booking user supplies an email and a payment fails, a failed payment email should be sent to the user.
-When the booking user supplies an email and a cancellation is successful, a cancellation email should be sent to the user.
-When the booking user supplies an email and a cancellation fails, an explanation email should be sent to the user.
+When the booking user supplies an email and a payment fails, a failed payment email should be sent to the user. KLAR 
+When the booking user supplies an email and a cancellation is successful, a cancellation email should be sent to the user. KLAR
+When the booking user supplies an email and a cancellation fails, an explanation email should be sent to the user. KLAR
 
-Changing the booking date up to 20 days before the booking charges an additional 20% of the original booking price.
+Changing the booking date up to 20 days before the booking charges an additional 20% of the original booking price. 
 Changing the booking date up to 10 days before the booking charges an additional 30% of the original booking price.
 Changing the booking date up to 2 days before the booking charges an additional 40% of the original booking price.
 

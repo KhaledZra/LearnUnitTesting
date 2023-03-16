@@ -36,7 +36,7 @@ namespace Lab04.Domain.Tests
         public BookingServiceTests()
         {
             _fake = new AutoFake();
-            _fake.Provide<MongoDbHandler>(new MongoDbHandler(this.mongoClient));
+            _fake.Provide<IMongoClient>(this.mongoClient);
             // _fake.Provide<BookingDocument>(_fake.Resolve<BookingService>().CreateNewBooking(
             //     userId:1,
             //     userName: "khaled",
@@ -108,7 +108,7 @@ namespace Lab04.Domain.Tests
                     .GetPrice(A<BookingDocument>.Ignored)).Returns(50);
             
             // Act
-            bookingDocument.User.StartPaymentProcess(50);
+            bookingDocument.UserDocument.StartPaymentProcess(50);
 
             // Assert
             A.CallTo(() => _fake.Resolve<IPaymentGateway>().SendPayment(50)).MustHaveHappenedOnceExactly();
@@ -173,16 +173,17 @@ namespace Lab04.Domain.Tests
                 .Returns(pricePaid);
 
             BookingService sut = _fake.Resolve<BookingService>();
-            
-            sut.AddBookingToDb(sut.CreateNewBooking(
-                userId:1,
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId: 1,
                 userName: "khaled",
                 bookingId: 1,
                 bookingLocation: "skene",
-                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(daysLeft)));
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(daysLeft));
+            
+            sut.AddBookingToDb(bookingDocument);
             
             // Act
-            sut.StartBookingCancelProcess(bookingId:1);
+            sut.StartBookingCancelProcess(bookingDocument);
 
             // Assert
             A.CallTo(() => _fake.Resolve<IPaymentGateway>()
@@ -207,7 +208,111 @@ namespace Lab04.Domain.Tests
         
             // Assert
             A.CallTo(() => _fake.Resolve<IEmailSystem>()
-                .SendSuccessfulEmail(bookingDocument)).MustHaveHappenedOnceExactly();
+                .SendBookingInformationEmail(bookingDocument)).MustHaveHappenedOnceExactly();
+        }
+        
+        [Fact]
+        public void Booking_should_send_email_if_payment_fails()
+        {
+            // Arrange
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId: 1,
+                userName: "khaled",
+                userEmail: "khaled@gmail.com",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(100));
+
+            A.CallTo(() => _fake
+                    .Resolve<IPaymentGateway>()
+                    .SendPayment(A<float>.Ignored))
+                    .Throws(new Exception("Error from server side"));
+            
+            // Act
+            Action act = () => sut.AddBookingToDb(bookingDocument);
+        
+            // Assert
+            act.Should().Throw<Exception>("Error from server side");
+            A.CallTo(() => _fake.Resolve<IEmailSystem>()
+                .SendFailedPaymentEmail(bookingDocument)).MustHaveHappenedOnceExactly();
+        }
+        
+        [Fact]
+        public void Booking_should_send_email_on_cancellation_failure()
+        {
+            // Arrange
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId: 1,
+                userName: "khaled",
+                userEmail: "khaled@gmail.com",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(100));
+
+            A.CallTo(() => _fake
+                    .Resolve<IPaymentGateway>()
+                    .SendPayment(A<float>.Ignored))
+                    .Throws(new Exception("Error from server side"));
+            
+            // Act
+            Action act = () => sut.AddBookingToDb(bookingDocument);
+        
+            // Assert
+            act.Should().Throw<Exception>("Error from server side");
+            A.CallTo(() => _fake.Resolve<IEmailSystem>()
+                .SendFailedPaymentEmail(bookingDocument)).MustHaveHappenedOnceExactly();
+        }
+        
+        [Fact]
+        public void Booking_should_send_email_on_cancellation_success()
+        {
+            // Arrange
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId: 1,
+                userName: "khaled",
+                userEmail: "khaled@gmail.com",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(100));
+            
+            sut.AddBookingToDb(bookingDocument);
+
+            // Act
+            sut.StartBookingCancelProcess(bookingDocument);
+        
+            // Assert
+            A.CallTo(() => _fake.Resolve<IEmailSystem>()
+                .SendSuccessfulBookingCancellationEmail(bookingDocument)).MustHaveHappenedOnceExactly();
+        }
+        
+        [Fact]
+        public void Booking_should_send_email_on_cancellation_failure_with_reason()
+        {
+            // Arrange
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId: 1,
+                userName: "khaled",
+                userEmail: "khaled@gmail.com",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(-5));
+            
+            sut.AddBookingToDb(bookingDocument);
+
+            // Act
+            try
+            {
+                sut.StartBookingCancelProcess(bookingDocument);
+            }
+            catch { }
+        
+            // Assert
+            A.CallTo(() => _fake.Resolve<IEmailSystem>()
+                .SendFailedBookingCancellationEmail(bookingDocument, A<string>.Ignored)).MustHaveHappenedOnceExactly();
         }
     }
 }

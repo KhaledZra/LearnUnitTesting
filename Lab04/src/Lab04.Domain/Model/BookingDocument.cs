@@ -11,17 +11,17 @@ public class BookingDocument
 {
     [BsonId]
     public int Id { get; private set; }
-    public User User { get; private set; }
+    public UserDocument UserDocument { get; private set; }
     public float Price { get; private set; }
     public string Location { get; private set; }
     public DateOnly DateRequested { get; private set; }
     public bool IsActive { get; private set; }
 
-    public BookingDocument(int id, User user, IPaymentCalculator paymentCalculator, string location,
+    public BookingDocument(int id, UserDocument userDocument, IPaymentCalculator paymentCalculator, string location,
         DateOnly dateRequested)
     {
         Id = id;
-        User = user;
+        UserDocument = userDocument;
         Location = location;
         DateRequested = dateRequested;
         Price = paymentCalculator.GetPrice(this);

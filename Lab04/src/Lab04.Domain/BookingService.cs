@@ -29,13 +29,14 @@ namespace Lab04.Domain
         {
             var newBooking = new BookingDocument(
                 paymentCalculator: _paymentCalculator,
-                user: new User(userId, userName, _paymentGateway, userEmail),
+                userDocument: new UserDocument(userId, userName, _paymentGateway, userEmail),
                 id: bookingId,
                 location: bookingLocation,
                 dateRequested: bookingStartDate);
             
             // If user gives email send email with successful booking information
-            if (!string.IsNullOrWhiteSpace(userEmail)) _emailSystem.SendSuccessfulEmail(newBooking);
+            CheckAndSendEmail(newBooking, () => 
+                _emailSystem.SendBookingInformationEmail(newBooking));
 
             return newBooking;
         }
@@ -45,10 +46,13 @@ namespace Lab04.Domain
             try
             {
                 // On success start payment process from user
-                bookingDocument.User.StartPaymentProcess(bookingDocument.Price);
+                bookingDocument.UserDocument.StartPaymentProcess(bookingDocument.Price);
             }
             catch (Exception e)
             {
+                CheckAndSendEmail(bookingDocument, () => 
+                    _emailSystem.SendFailedPaymentEmail(bookingDocument));
+                
                 Console.WriteLine(e);
                 throw;
             }
@@ -63,11 +67,11 @@ namespace Lab04.Domain
             //  ?? throw new Exception("Not found")
         }
 
-        public void StartBookingCancelProcess(int bookingId)
+        public void StartBookingCancelProcess(BookingDocument bookingDocument)
         {
-            var bookingDocument = _dataManager.GetFromDatabase(bookingId);
+            // var bookingDocument = _dataManager.GetFromDatabase(bookingId);
             DateOnly dateNow = DateOnly.FromDateTime(DateTime.Today);
-            Guard.Against.Null(bookingDocument, nameof(bookingDocument));
+            // Guard.Against.Null(bookingDocument, nameof(bookingDocument));
 
             if (dateNow.AddDays(60) < bookingDocument.DateRequested) // more than 60 days
             {
@@ -83,15 +87,33 @@ namespace Lab04.Domain
             }
             else if (dateNow >= bookingDocument.DateRequested) // user trying to cancel after booking start date
             {
+                CheckAndSendEmail(bookingDocument, () => 
+                    _emailSystem.SendFailedBookingCancellationEmail(bookingDocument,
+                        $"Trying to cancel booking past start date, Today: {dateNow}," +
+                        $" booking start date: {bookingDocument.DateRequested}"));
+                
                 throw new Exception($"Trying to cancel booking past start date, Today: {dateNow}," +
                                     $" booking start date: {bookingDocument.DateRequested}");
             }
             else
             {
+                CheckAndSendEmail(bookingDocument, () => 
+                    _emailSystem.SendFailedBookingCancellationEmail(bookingDocument,
+                        $"Something went wrong, Error with server."));
                 throw new NotImplementedException("Something went wrong, unhandled condition.");
             }
 
+            CheckAndSendEmail(bookingDocument, () => 
+                _emailSystem.SendSuccessfulBookingCancellationEmail(bookingDocument));
             bookingDocument.DisableBooking();
+        }
+
+        public void CheckAndSendEmail(BookingDocument bookingDocument, Action emailAction)
+        {
+            if (!string.IsNullOrWhiteSpace(bookingDocument.UserDocument.Email))
+            {
+                emailAction.Invoke();
+            }
         }
     }
 }

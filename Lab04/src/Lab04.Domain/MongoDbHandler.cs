@@ -47,6 +47,7 @@ public class MongoDbHandler
 
     public bool UpdateToDatabase(BookingDocument booking)
     {
+        //_collection.UpdateOne<BookingDocument>(bd => bd.Id == booking.Id, );
         throw new System.NotImplementedException();
     }
 
