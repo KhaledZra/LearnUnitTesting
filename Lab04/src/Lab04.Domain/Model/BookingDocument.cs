@@ -32,4 +32,14 @@ public class BookingDocument
     {
         IsActive = false;
     }
+    
+    public void ChangeDate(DateOnly dateOnly)
+    {
+        DateRequested = dateOnly;
+    }
+
+    public void AddFeeToPrice(float fee)
+    {
+        Price += fee;
+    }
 }

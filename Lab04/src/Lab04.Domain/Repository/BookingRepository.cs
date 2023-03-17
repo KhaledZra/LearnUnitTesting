@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lab04.Domain.Interface;
 using Lab04.Domain.Model;
 using MongoDB.Driver;
 
-namespace Lab04.Domain;
+namespace Lab04.Domain.Repository;
 
-public class MongoDbHandler
+public class BookingRepository // middleman between service and database
 {
     // Not used
     private List<BookingDocument> _fakeDbList = new List<BookingDocument>();
@@ -16,7 +15,7 @@ public class MongoDbHandler
     private readonly IMongoCollection<BookingDocument> _collection;
 
     // IMongoClient is injected instead
-    public MongoDbHandler(IMongoClient mongoClient)
+    public BookingRepository(IMongoClient mongoClient)
     {
         // Better to do this elsewhere when injecting mongoClient with preset settings
         //this._settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
@@ -47,8 +46,8 @@ public class MongoDbHandler
 
     public bool UpdateToDatabase(BookingDocument booking)
     {
-        //_collection.UpdateOne<BookingDocument>(bd => bd.Id == booking.Id, );
-        throw new System.NotImplementedException();
+        return _collection.ReplaceOne<BookingDocument>(bd => bd.Id == booking.Id, booking)
+            .IsAcknowledged;
     }
 
     public bool RemoveFromDatabase(int id)

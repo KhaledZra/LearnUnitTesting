@@ -12,9 +12,9 @@ When the booking user supplies an email and a payment fails, a failed payment em
 When the booking user supplies an email and a cancellation is successful, a cancellation email should be sent to the user. KLAR
 When the booking user supplies an email and a cancellation fails, an explanation email should be sent to the user. KLAR
 
-Changing the booking date up to 20 days before the booking charges an additional 20% of the original booking price. 
-Changing the booking date up to 10 days before the booking charges an additional 30% of the original booking price.
-Changing the booking date up to 2 days before the booking charges an additional 40% of the original booking price.
+Changing the booking date up to 20 days before the booking charges an additional 20% of the original booking price. KLAR
+Changing the booking date up to 10 days before the booking charges an additional 30% of the original booking price. KLAR
+Changing the booking date up to 2 days before the booking charges an additional 40% of the original booking price. KLAR
 
 Bonus
 

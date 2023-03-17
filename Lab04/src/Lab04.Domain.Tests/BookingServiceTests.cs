@@ -9,6 +9,7 @@ using Xunit;
 using FakeItEasy;
 using Lab04.Domain.Interface;
 using Lab04.Domain.Model;
+using Lab04.Domain.Service;
 using MongoDB.Driver;
 
 namespace Lab04.Domain.Tests
@@ -108,7 +109,7 @@ namespace Lab04.Domain.Tests
                     .GetPrice(A<BookingDocument>.Ignored)).Returns(50);
             
             // Act
-            bookingDocument.UserDocument.StartPaymentProcess(50);
+            sut.StartPaymentProcess(50);
 
             // Assert
             A.CallTo(() => _fake.Resolve<IPaymentGateway>().SendPayment(50)).MustHaveHappenedOnceExactly();
@@ -313,6 +314,42 @@ namespace Lab04.Domain.Tests
             // Assert
             A.CallTo(() => _fake.Resolve<IEmailSystem>()
                 .SendFailedBookingCancellationEmail(bookingDocument, A<string>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Theory]
+        [InlineData(20, 100, 100.0f, 20.0f)]
+        [InlineData(10, 100, 100.0f, 30.0f)]
+        [InlineData(2, 100, 100.0f, 40.0f)]
+        public void Booking_should_charge_additional_fee_on_date_change(
+            int daysFromToday, int newDaysFromToday, float price, float expectedAdditionalFee)
+        {
+            // Arrange
+            A.CallTo(() => _fake.Resolve<IPaymentCalculator>()
+                .GetPrice(A<BookingDocument>.Ignored))
+                .Returns(price);
+            
+            BookingService sut = _fake.Resolve<BookingService>();
+            BookingDocument bookingDocument = sut.CreateNewBooking(
+                userId: 1,
+                userName: "khaled",
+                userEmail: "khaled@gmail.com",
+                bookingId: 1,
+                bookingLocation: "skene",
+                bookingStartDate: DateOnly.FromDateTime(DateTime.Today).AddDays(daysFromToday));
+
+            sut.AddBookingToDb(bookingDocument);
+
+            // Act
+            sut.ChangeBookingDate(bookingDocument, newDaysFromToday);
+            
+            // Assert
+            A.CallTo(() => _fake.Resolve<IPaymentGateway>()
+                .SendPayment(price))
+                .MustHaveHappenedOnceExactly();
+            
+            A.CallTo(() => _fake.Resolve<IPaymentGateway>()
+                .SendPayment(expectedAdditionalFee))
+                .MustHaveHappenedOnceExactly();
         }
     }
 }

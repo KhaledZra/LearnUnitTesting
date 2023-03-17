@@ -4,21 +4,22 @@ using System.Data;
 using System.Linq;
 using Lab04.Domain.Interface;
 using Lab04.Domain.Model;
+using Lab04.Domain.Repository;
 using Ardalis.GuardClauses;
 
-namespace Lab04.Domain
+namespace Lab04.Domain.Service
 {
     public class BookingService
     {
-        private readonly MongoDbHandler _dataManager;
+        private readonly BookingRepository _bookingRepository;
         private readonly IPaymentCalculator _paymentCalculator;
         private readonly IPaymentGateway _paymentGateway;
         private readonly IEmailSystem _emailSystem;
 
-        public BookingService(MongoDbHandler dataManager, IPaymentCalculator paymentCalculator,
+        public BookingService(BookingRepository bookingRepository, IPaymentCalculator paymentCalculator,
             IPaymentGateway paymentGateway, IEmailSystem emailSystem)
         {
-            _dataManager = dataManager;
+            _bookingRepository = bookingRepository;
             _paymentCalculator = paymentCalculator;
             _paymentGateway = paymentGateway;
             _emailSystem = emailSystem;
@@ -29,7 +30,7 @@ namespace Lab04.Domain
         {
             var newBooking = new BookingDocument(
                 paymentCalculator: _paymentCalculator,
-                userDocument: new UserDocument(userId, userName, _paymentGateway, userEmail),
+                userDocument: new UserDocument(userId, userName, userEmail),
                 id: bookingId,
                 location: bookingLocation,
                 dateRequested: bookingStartDate);
@@ -46,7 +47,7 @@ namespace Lab04.Domain
             try
             {
                 // On success start payment process from user
-                bookingDocument.UserDocument.StartPaymentProcess(bookingDocument.Price);
+                StartPaymentProcess(bookingDocument.Price);
             }
             catch (Exception e)
             {
@@ -58,12 +59,12 @@ namespace Lab04.Domain
             }
             
             // If everything works save to DB
-            _dataManager.SaveToDatabase(bookingDocument);
+            _bookingRepository.SaveToDatabase(bookingDocument);
         }
 
         public BookingDocument GetBookingFromDb(int bookingId)
         {
-            return _dataManager.GetFromDatabase(bookingId);
+            return _bookingRepository.GetFromDatabase(bookingId);
             //  ?? throw new Exception("Not found")
         }
 
@@ -113,6 +114,45 @@ namespace Lab04.Domain
             if (!string.IsNullOrWhiteSpace(bookingDocument.UserDocument.Email))
             {
                 emailAction.Invoke();
+            }
+        }
+        
+        public void ChangeBookingDate(BookingDocument bookingDocument, int newDaysFromToday)
+        {
+            DateOnly newDate = DateOnly.FromDateTime(DateTime.Today.AddDays(newDaysFromToday));
+            int differenceBetweenDates = 
+                bookingDocument.DateRequested.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber;
+            float fee = 0.0f;
+            
+            if (differenceBetweenDates <= 0) throw new Exception("Too late to change date!");
+
+            // if (differenceBetweenDates <= 21)
+            // {
+            //     bookingDocument.ChangeDate(newDate);
+            //     _bookingRepository.UpdateToDatabase(bookingDocument);
+            //     return;
+            // }
+            
+            if (differenceBetweenDates <= 2) fee = bookingDocument.Price * 0.4f;
+            else if (differenceBetweenDates <= 10) fee = bookingDocument.Price * 0.3f;
+            else if (differenceBetweenDates <= 20) fee = bookingDocument.Price * 0.2f;
+
+            StartPaymentProcess(float.Round(fee));
+            bookingDocument.AddFeeToPrice(fee);
+            bookingDocument.ChangeDate(newDate);
+            _bookingRepository.UpdateToDatabase(bookingDocument);
+        }
+        
+        public void StartPaymentProcess(float payment)
+        {
+            try
+            {
+                _paymentGateway.SendPayment(payment);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
     }
